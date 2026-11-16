@@ -1,0 +1,768 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5S Finding Dashboard</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body {
+    background: #f3f5f9;
+    color: #253047;
+    padding: 25px;
+}
+
+.container {
+    max-width: 1600px;
+    margin: auto;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+header h1 {
+    font-size: 28px;
+}
+
+header p {
+    color: #718096;
+    margin-top: 5px;
+}
+
+button {
+    border: none;
+    padding: 11px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.primary {
+    background: #2563eb;
+    color: white;
+}
+
+.secondary {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.card, .panel {
+    background: white;
+    border-radius: 10px;
+    padding: 22px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.card p {
+    color: #718096;
+    font-size: 14px;
+}
+
+.card h2 {
+    font-size: 32px;
+    margin-top: 12px;
+}
+
+.panel {
+    margin-bottom: 25px;
+}
+
+.panel h2 {
+    font-size: 19px;
+    margin-bottom: 20px;
+}
+
+.filters {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+input, select, textarea {
+    padding: 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.filters input, .filters select {
+    width: auto;
+    min-width: 170px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1100px;
+}
+
+th, td {
+    text-align: left;
+    padding: 13px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+}
+
+th {
+    background: #f8fafc;
+    color: #475569;
+}
+
+.status {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    background: #e2e8f0;
+}
+
+.status.closed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status.open {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status.progress {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 10;
+    overflow-y: auto;
+    padding: 25px;
+}
+
+.modal-content {
+    background: white;
+    max-width: 700px;
+    margin: 30px auto;
+    padding: 25px;
+    border-radius: 10px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.full {
+    grid-column: 1 / -1;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+#message {
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+@media(max-width: 900px) {
+    .cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media(max-width: 600px) {
+    body {
+        padding: 12px;
+    }
+
+    .cards {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .card {
+        padding: 14px;
+    }
+
+    .card h2 {
+        font-size: 25px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .full {
+        grid-column: auto;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+    <div>
+        <h1>5S Finding Dashboard</h1>
+        <p>5S Workplace Audit & Improvement Monitoring</p>
+    </div>
+
+    <button class="primary" onclick="openForm()">
+        + Add New Finding
+    </button>
+</header>
+
+<div id="message"></div>
+
+<section class="cards">
+
+    <div class="card">
+        <p>Total Findings</p>
+        <h2 id="total">0</h2>
+    </div>
+
+    <div class="card">
+        <p>Open Findings</p>
+        <h2 id="open">0</h2>
+    </div>
+
+    <div class="card">
+        <p>In Progress</p>
+        <h2 id="progress">0</h2>
+    </div>
+
+    <div class="card">
+        <p>Closed Findings</p>
+        <h2 id="closed">0</h2>
+    </div>
+
+</section>
+
+<section class="panel">
+
+    <h2>5S Findings Register</h2>
+
+    <div class="filters">
+
+        <input
+            type="text"
+            id="search"
+            placeholder="Search findings..."
+            oninput="renderTable()"
+        >
+
+        <select id="departmentFilter" onchange="renderTable()">
+            <option value="">All Departments</option>
+        </select>
+
+        <select id="statusFilter" onchange="renderTable()">
+            <option value="">All Status</option>
+            <option value="Open">Open</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Closed">Closed</option>
+        </select>
+
+        <button class="secondary" onclick="loadData()">
+            Refresh Data
+        </button>
+
+    </div>
+
+    <div class="table-wrapper">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Finding ID</th>
+                    <th>Date</th>
+                    <th>Department</th>
+                    <th>5S Category</th>
+                    <th>Finding Description</th>
+                    <th>Before</th>
+                    <th>After</th>
+                    <th>Responsible Person</th>
+                    <th>Target Date</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="tableBody">
+                <tr>
+                    <td colspan="11">Loading data...</td>
+                </tr>
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+</div>
+
+<!-- ADD FINDING FORM -->
+
+<div class="modal" id="findingModal">
+
+    <div class="modal-content">
+
+        <h2 style="margin-bottom:20px;">Add New 5S Finding</h2>
+
+        <form id="findingForm">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Department</label>
+                    <select name="Department" required>
+                        <option value="">Select Department</option>
+                        <option>Production</option>
+                        <option>Engineering</option>
+                        <option>Quality</option>
+                        <option>Warehouse</option>
+                        <option>Maintenance</option>
+                        <option>HR</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>5S Category</label>
+                    <select name="5S Category" required>
+                        <option value="">Select Category</option>
+                        <option>Sort</option>
+                        <option>Set in Order</option>
+                        <option>Shine</option>
+                        <option>Standardize</option>
+                        <option>Sustain</option>
+                    </select>
+                </div>
+
+                <div class="form-group full">
+                    <label>Finding Description</label>
+                    <textarea name="Finding Description" rows="3" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Before</label>
+                    <textarea name="Before" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>After / Corrective Action</label>
+                    <textarea name="After" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Responsible Person</label>
+                    <input name="Responsible Person">
+                </div>
+
+                <div class="form-group">
+                    <label>Target Date</label>
+                    <input type="date" name="Target Date" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select name="Priority" required>
+                        <option value="">Select Priority</option>
+                        <option>High</option>
+                        <option>Medium</option>
+                        <option>Low</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="Status">
+                        <option>Open</option>
+                        <option>In Progress</option>
+                        <option>Closed</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="secondary" onclick="closeForm()">
+                    Cancel
+                </button>
+
+                <button type="submit" class="primary" id="saveButton">
+                    Save Finding
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+
+// ============================================
+// GOOGLE APPS SCRIPT CONNECTION
+// ============================================
+
+// Replace this with your deployed Apps Script Web App URL.
+const API_URL = "https://script.google.com/macros/s/AKfycbxiWCqmTlFFVMCNUWoxJu5eWYL85hfadO58vQeneQRd2-bgETpn0NW2gIuaTw65MGyxww/exec";
+
+let findings = [];
+
+// ============================================
+// LOAD DATABASE
+// ============================================
+
+async function loadData() {
+
+    showMessage("Loading findings...", false);
+
+    try {
+
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+            throw new Error("Server returned HTTP " + response.status);
+        }
+
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+            throw new Error("Invalid database response.");
+        }
+
+        findings = data;
+
+        updateDashboard();
+        updateDepartmentFilter();
+        renderTable();
+
+        showMessage("Database connected successfully.", false);
+
+    } catch (error) {
+
+        console.error(error);
+
+        showMessage(
+            "Connection failed: " + error.message +
+            ". Check your Apps Script deployment and URL.",
+            true
+        );
+
+    }
+
+}
+
+// ============================================
+// DASHBOARD COUNTERS
+// ============================================
+
+function updateDashboard() {
+
+    document.getElementById("total").textContent = findings.length;
+
+    document.getElementById("open").textContent =
+        findings.filter(x => x.Status === "Open").length;
+
+    document.getElementById("progress").textContent =
+        findings.filter(x => x.Status === "In Progress").length;
+
+    document.getElementById("closed").textContent =
+        findings.filter(x => x.Status === "Closed").length;
+
+}
+
+// ============================================
+// DEPARTMENT FILTER
+// ============================================
+
+function updateDepartmentFilter() {
+
+    const select = document.getElementById("departmentFilter");
+    const currentValue = select.value;
+
+    const departments = [
+        ...new Set(findings.map(x => x.Department).filter(Boolean))
+    ];
+
+    select.innerHTML = '<option value="">All Departments</option>';
+
+    departments.forEach(department => {
+
+        const option = document.createElement("option");
+        option.value = department;
+        option.textContent = department;
+
+        select.appendChild(option);
+
+    });
+
+    select.value = departments.includes(currentValue) ? currentValue : "";
+
+}
+
+// ============================================
+// DISPLAY FINDINGS TABLE
+// ============================================
+
+function renderTable() {
+
+    const tbody = document.getElementById("tableBody");
+
+    const search = document.getElementById("search").value.toLowerCase();
+    const department = document.getElementById("departmentFilter").value;
+    const status = document.getElementById("statusFilter").value;
+
+    const filtered = findings.filter(item => {
+
+        const searchable = Object.values(item)
+            .join(" ")
+            .toLowerCase();
+
+        return searchable.includes(search) &&
+            (!department || item.Department === department) &&
+            (!status || item.Status === status);
+
+    });
+
+    tbody.innerHTML = "";
+
+    if (filtered.length === 0) {
+
+        tbody.innerHTML =
+            '<tr><td colspan="11">No findings found.</td></tr>';
+
+        return;
+
+    }
+
+    filtered.forEach(item => {
+
+        const row = document.createElement("tr");
+
+        const values = [
+            item["Finding ID"],
+            item.Date,
+            item.Department,
+            item["5S Category"],
+            item["Finding Description"],
+            item.Before,
+            item.After,
+            item["Responsible Person"],
+            item["Target Date"],
+            item.Priority,
+            item.Status
+        ];
+
+        values.forEach((value, index) => {
+
+            const cell = document.createElement("td");
+
+            if (index === 10) {
+
+                const badge = document.createElement("span");
+                badge.className = "status";
+
+                if (value === "Closed") {
+                    badge.classList.add("closed");
+                } else if (value === "Open") {
+                    badge.classList.add("open");
+                } else if (value === "In Progress") {
+                    badge.classList.add("progress");
+                }
+
+                badge.textContent = value || "-";
+                cell.appendChild(badge);
+
+            } else if (index === 1 || index === 8) {
+
+                cell.textContent = formatDate(value);
+
+            } else {
+
+                cell.textContent = value || "-";
+
+            }
+
+            row.appendChild(cell);
+
+        });
+
+        tbody.appendChild(row);
+
+    });
+
+}
+
+// ============================================
+// DATE FORMAT
+// ============================================
+
+function formatDate(value) {
+
+    if (!value) return "-";
+
+    const date = new Date(value);
+
+    if (isNaN(date.getTime())) return value;
+
+    return date.toLocaleDateString("en-GB");
+
+}
+
+// ============================================
+// OPEN / CLOSE FORM
+// ============================================
+
+function openForm() {
+    document.getElementById("findingModal").style.display = "block";
+}
+
+function closeForm() {
+    document.getElementById("findingModal").style.display = "none";
+}
+
+// ============================================
+// SAVE NEW FINDING
+// ============================================
+
+document.getElementById("findingForm")
+.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const button = document.getElementById("saveButton");
+
+    button.disabled = true;
+    button.textContent = "Saving...";
+
+    const formData = new FormData(this);
+
+    const payload = Object.fromEntries(formData.entries());
+
+    payload.Date = new Date().toISOString();
+
+    try {
+
+        const response = await fetch(API_URL, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
+
+            body: JSON.stringify(payload)
+
+        });
+
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+        }
+
+        const result = await response.json();
+
+        if (result.success === false) {
+            throw new Error(result.message || "Unable to save finding.");
+        }
+
+        showMessage("Finding submitted successfully.", false);
+
+        this.reset();
+
+        closeForm();
+
+        await loadData();
+
+    } catch (error) {
+
+        console.error(error);
+
+        showMessage(
+            "Unable to save finding: " + error.message,
+            true
+        );
+
+    } finally {
+
+        button.disabled = false;
+        button.textContent = "Save Finding";
+
+    }
+
+});
+
+// ============================================
+// MESSAGE DISPLAY
+// ============================================
+
+function showMessage(message, isError) {
+
+    const element = document.getElementById("message");
+
+    element.textContent = message;
+
+    element.style.color = isError ? "#dc2626" : "#15803d";
+
+}
+
+// ============================================
+// INITIALIZE DASHBOARD
+// ============================================
+
+loadData();
+
+</script>
+
+</body>
+</html>
