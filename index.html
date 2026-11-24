@@ -257,6 +257,10 @@ th { background: #f8fafc; color: #475569; }
             <option value="Closed">Closed</option>
             <option value="Completed">Completed</option>
         </select>
+        <input type="date" id="dateFrom" onchange="renderTable()" title="From Date">
+
+<input type="date" id="dateTo" onchange="renderTable()" title="To Date">
+
 
         <button class="secondary" onclick="loadData()">Refresh Data</button>
     </div>
@@ -744,12 +748,55 @@ function renderTable() {
     const department = document.getElementById("departmentFilter").value;
     const status = document.getElementById("statusFilter").value;
 
+    // Date filters
+    const dateFrom = document.getElementById("dateFrom").value;
+    const dateTo = document.getElementById("dateTo").value;
+
     const filtered = findings.filter(item => {
         const searchable = Object.values(item).join(" ").toLowerCase();
 
-        return searchable.includes(search) &&
-            (!department || item.Department === department) &&
-            (!status || item.Status === status);
+        // Normal filters
+        const matchesSearch = searchable.includes(search);
+        const matchesDepartment =
+            !department || item.Department === department;
+        const matchesStatus =
+            !status || item.Status === status;
+
+        // Date filter
+        let matchesDate = true;
+
+        if (dateFrom || dateTo) {
+            const itemDate = new Date(item.Date);
+
+            if (isNaN(itemDate.getTime())) {
+                matchesDate = false;
+            } else {
+                itemDate.setHours(0, 0, 0, 0);
+
+                if (dateFrom) {
+                    const from = new Date(dateFrom + "T00:00:00");
+
+                    if (itemDate < from) {
+                        matchesDate = false;
+                    }
+                }
+
+                if (dateTo) {
+                    const to = new Date(dateTo + "T23:59:59");
+
+                    if (itemDate > to) {
+                        matchesDate = false;
+                    }
+                }
+            }
+        }
+
+        return (
+            matchesSearch &&
+            matchesDepartment &&
+            matchesStatus &&
+            matchesDate
+        );
     });
 
     tbody.innerHTML = "";
@@ -825,6 +872,7 @@ function renderTable() {
         editButton.type = "button";
         editButton.className = "edit-button";
         editButton.textContent = "Edit";
+
         editButton.addEventListener("click", () => {
             editFinding(item["Finding ID"]);
         });
@@ -835,6 +883,7 @@ function renderTable() {
         tbody.appendChild(row);
     });
 }
+
 
 /* =====================================================
    DATE FORMAT
