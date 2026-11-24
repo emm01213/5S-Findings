@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -246,7 +245,7 @@ th { background: #f8fafc; color: #475569; }
     <div class="filters">
         <input type="text" id="search" placeholder="Search findings..." oninput="renderTable()">
 
-        <select id="departmentFilter" onchange="updateOwnerFilter(); renderTable();">
+        <select id="departmentFilter" onchange="updateOwnerFilter(); updateDashboard(); renderTable();">
             <option value="">All Departments</option>
         </select>
             <select id="ownerFilter" onchange="renderTable()">
@@ -701,19 +700,38 @@ async function loadData() {
 ===================================================== */
 
 function updateDashboard() {
-    document.getElementById("total").textContent = findings.length;
 
+    const selectedDepartment =
+        document.getElementById("departmentFilter").value;
+
+    // Filter findings according to selected department
+    const departmentFindings = findings.filter(item => {
+        return !selectedDepartment ||
+               item.Department === selectedDepartment;
+    });
+
+    // TOTAL FINDINGS
+    document.getElementById("total").textContent =
+        departmentFindings.length;
+
+    // OPEN FINDINGS
     document.getElementById("open").textContent =
-        findings.filter(x =>
-            x.Status === "Pending" || x.Status === "Open"
+        departmentFindings.filter(item =>
+            item.Status === "Pending" ||
+            item.Status === "Open"
         ).length;
 
+    // IN PROGRESS
     document.getElementById("progress").textContent =
-        findings.filter(x => x.Status === "In Progress").length;
+        departmentFindings.filter(item =>
+            item.Status === "In Progress"
+        ).length;
 
+    // CLOSED FINDINGS
     document.getElementById("closed").textContent =
-        findings.filter(x =>
-            x.Status === "Closed" || x.Status === "Completed"
+        departmentFindings.filter(item =>
+            item.Status === "Closed" ||
+            item.Status === "Completed"
         ).length;
 }
 
