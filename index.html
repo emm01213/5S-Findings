@@ -246,9 +246,12 @@ th { background: #f8fafc; color: #475569; }
     <div class="filters">
         <input type="text" id="search" placeholder="Search findings..." oninput="renderTable()">
 
-        <select id="departmentFilter" onchange="renderTable()">
+        <select id="departmentFilter" onchange="updateOwnerFilter(); renderTable();">
             <option value="">All Departments</option>
         </select>
+            <select id="ownerFilter" onchange="renderTable()">
+            <option value="">All Owners</option>
+            </select>
 
         <select id="statusFilter" onchange="renderTable()">
             <option value="">All Status</option>
@@ -679,6 +682,7 @@ async function loadData() {
 
         updateDashboard();
         updateDepartmentFilter();
+        updateOwnerFilter();
         renderTable();
 
         showMessage("Database connected successfully.", false);
@@ -736,7 +740,48 @@ function updateDepartmentFilter() {
 
     select.value = departments.includes(currentValue) ? currentValue : "";
 }
+/* =====================================================
+   OWNER FILTER
+===================================================== */
 
+function updateOwnerFilter() {
+    const select = document.getElementById("ownerFilter");
+    const currentValue = select.value;
+
+    const selectedDepartment =
+        document.getElementById("departmentFilter").value;
+
+    // Only use findings from the selected department
+    const relevantFindings = findings.filter(item => {
+        return !selectedDepartment ||
+               item.Department === selectedDepartment;
+    });
+
+    // Get owners from those findings only
+    const owners = [
+        ...new Set(
+            relevantFindings
+                .map(item => item["Responsible Person"])
+                .filter(Boolean)
+        )
+    ].sort();
+
+    select.innerHTML = '<option value="">All Owners</option>';
+
+    owners.forEach(owner => {
+        const option = document.createElement("option");
+        option.value = owner;
+        option.textContent = owner;
+        select.appendChild(option);
+    });
+
+    // Keep current owner only if that owner still exists
+    if (owners.includes(currentValue)) {
+        select.value = currentValue;
+    } else {
+        select.value = "";
+    }
+}
 /* =====================================================
    RENDER TABLE
 ===================================================== */
@@ -746,6 +791,7 @@ function renderTable() {
 
     const search = document.getElementById("search").value.toLowerCase();
     const department = document.getElementById("departmentFilter").value;
+    const owner = document.getElementById("ownerFilter").value;
     const status = document.getElementById("statusFilter").value;
 
     // Date filters
@@ -757,8 +803,13 @@ function renderTable() {
 
         // Normal filters
         const matchesSearch = searchable.includes(search);
+
         const matchesDepartment =
             !department || item.Department === department;
+
+        const matchesOwner =
+            !owner || item["Responsible Person"] === owner;
+
         const matchesStatus =
             !status || item.Status === status;
 
@@ -794,6 +845,7 @@ function renderTable() {
         return (
             matchesSearch &&
             matchesDepartment &&
+            matchesOwner &&
             matchesStatus &&
             matchesDate
         );
@@ -845,20 +897,24 @@ function renderTable() {
 
             if (index === 1) {
                 cell.textContent = formatDate(value);
+
             } else if (index === 2) {
                 const badge = document.createElement("span");
                 badge.className = "status";
 
                 if (value === "Closed" || value === "Completed") {
                     badge.classList.add("closed");
+
                 } else if (value === "Pending" || value === "Open") {
                     badge.classList.add("pending");
+
                 } else if (value === "In Progress") {
                     badge.classList.add("progress");
                 }
 
                 badge.textContent = value || "-";
                 cell.appendChild(badge);
+
             } else {
                 cell.textContent = value || "-";
             }
