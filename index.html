@@ -245,12 +245,17 @@ th { background: #f8fafc; color: #475569; }
     <div class="filters">
         <input type="text" id="search" placeholder="Search findings..." oninput="renderTable()">
 
-        <select id="departmentFilter" onchange="updateOwnerFilter(); updateDashboard(); renderTable();">
-            <option value="">All Departments</option>
-        </select>
-            <select id="ownerFilter" onchange="renderTable()">
-            <option value="">All Owners</option>
-            </select>
+        <select id="departmentFilter" onchange="updateLocationFilter(); updateOwnerFilter(); updateDashboard(); renderTable();">
+    <option value="">All Departments</option>
+</select>
+
+<select id="locationFilter" onchange="renderTable()">
+    <option value="">All Locations</option>
+</select>
+
+<select id="ownerFilter" onchange="renderTable()">
+    <option value="">All Owners</option>
+</select>
 
         <select id="statusFilter" onchange="renderTable()">
             <option value="">All Status</option>
@@ -679,10 +684,11 @@ async function loadData() {
 
         findings = response;
 
-        updateDashboard();
-        updateDepartmentFilter();
-        updateOwnerFilter();
-        renderTable();
+updateDashboard();
+updateDepartmentFilter();
+updateLocationFilter();
+updateOwnerFilter();
+renderTable();
 
         showMessage("Database connected successfully.", false);
 
@@ -759,6 +765,49 @@ function updateDepartmentFilter() {
     select.value = departments.includes(currentValue) ? currentValue : "";
 }
 /* =====================================================
+   LOCATION FILTER
+===================================================== */
+
+function updateLocationFilter() {
+    const select = document.getElementById("locationFilter");
+    const currentValue = select.value;
+
+    const selectedDepartment =
+        document.getElementById("departmentFilter").value;
+
+    // Only use findings from selected department
+    const relevantFindings = findings.filter(item => {
+        return !selectedDepartment ||
+               item.Department === selectedDepartment;
+    });
+
+    // Get unique locations
+    const locations = [
+        ...new Set(
+            relevantFindings
+                .map(item => item.Location)
+                .filter(Boolean)
+        )
+    ].sort();
+
+    select.innerHTML =
+        '<option value="">All Locations</option>';
+
+    locations.forEach(location => {
+        const option = document.createElement("option");
+        option.value = location;
+        option.textContent = location;
+        select.appendChild(option);
+    });
+
+    // Keep selected location if it still exists
+    if (locations.includes(currentValue)) {
+        select.value = currentValue;
+    } else {
+        select.value = "";
+    }
+}
+/* =====================================================
    OWNER FILTER
 ===================================================== */
 
@@ -807,10 +856,11 @@ function updateOwnerFilter() {
 function renderTable() {
     const tbody = document.getElementById("tableBody");
 
-    const search = document.getElementById("search").value.toLowerCase();
-    const department = document.getElementById("departmentFilter").value;
-    const owner = document.getElementById("ownerFilter").value;
-    const status = document.getElementById("statusFilter").value;
+ const search = document.getElementById("search").value.toLowerCase();
+const department = document.getElementById("departmentFilter").value;
+const location = document.getElementById("locationFilter").value;
+const owner = document.getElementById("ownerFilter").value;
+const status = document.getElementById("statusFilter").value;
 
     // Date filters
     const dateFrom = document.getElementById("dateFrom").value;
@@ -823,10 +873,13 @@ function renderTable() {
         const matchesSearch = searchable.includes(search);
 
         const matchesDepartment =
-            !department || item.Department === department;
+    !department || item.Department === department;
 
-        const matchesOwner =
-            !owner || item["Responsible Person"] === owner;
+const matchesLocation =
+    !location || item.Location === location;
+
+const matchesOwner =
+    !owner || item["Responsible Person"] === owner;
 
         const matchesStatus =
             !status || item.Status === status;
@@ -861,12 +914,13 @@ function renderTable() {
         }
 
         return (
-            matchesSearch &&
-            matchesDepartment &&
-            matchesOwner &&
-            matchesStatus &&
-            matchesDate
-        );
+    matchesSearch &&
+    matchesDepartment &&
+    matchesLocation &&
+    matchesOwner &&
+    matchesStatus &&
+    matchesDate
+);
     });
 
     tbody.innerHTML = "";
