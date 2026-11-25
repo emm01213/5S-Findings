@@ -1083,14 +1083,20 @@ function editFinding(findingId) {
     document.getElementById("editFindingId").textContent =
         "Finding ID: " + findingId;
 
-    document.getElementById("editTargetDate").value =
-        dateInputValue(item["Target Date"]);
+    document.getElementById("editResponsiblePerson").value =
+    item["Responsible Person"] || "";
 
-    document.getElementById("editStatus").value =
-        item["Status"] || "Pending";
+document.getElementById("editResponsiblePerson").value =
+    item["Responsible Person"] || "";
 
-    document.getElementById("editAction").value =
-        item["Action"] || "";
+document.getElementById("editTargetDate").value =
+    dateInputValue(item["Target Date"]);
+
+document.getElementById("editStatus").value =
+    item["Status"] || "Pending";
+
+document.getElementById("editAction").value =
+    item["Action"] || "";
 
     document.getElementById("editAfterPhoto").value = "";
     document.getElementById("editAfterPreview").style.display = "none";
