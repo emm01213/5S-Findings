@@ -249,7 +249,7 @@ th { background: #f8fafc; color: #475569; }
     <option value="">All Departments</option>
 </select>
 
-<select id="locationFilter" onchange="renderTable()">
+<select id="locationFilter" onchange="updateDashboard(); renderTable();">
     <option value="">All Locations</option>
 </select>
 
@@ -710,37 +710,42 @@ function updateDashboard() {
     const selectedDepartment =
         document.getElementById("departmentFilter").value;
 
-    // Filter findings according to selected department
-    const departmentFindings = findings.filter(item => {
-        return !selectedDepartment ||
-               item.Department === selectedDepartment;
+    const selectedLocation =
+        document.getElementById("locationFilter").value;
+
+    const filteredFindings = findings.filter(item => {
+
+        const departmentMatch =
+            !selectedDepartment ||
+            item.Department === selectedDepartment;
+
+        const locationMatch =
+            !selectedLocation ||
+            item.Location === selectedLocation;
+
+        return departmentMatch && locationMatch;
     });
 
-    // TOTAL FINDINGS
     document.getElementById("total").textContent =
-        departmentFindings.length;
+        filteredFindings.length;
 
-    // OPEN FINDINGS
     document.getElementById("open").textContent =
-        departmentFindings.filter(item =>
+        filteredFindings.filter(item =>
             item.Status === "Pending" ||
             item.Status === "Open"
         ).length;
 
-    // IN PROGRESS
     document.getElementById("progress").textContent =
-        departmentFindings.filter(item =>
+        filteredFindings.filter(item =>
             item.Status === "In Progress"
         ).length;
 
-    // CLOSED FINDINGS
     document.getElementById("closed").textContent =
-        departmentFindings.filter(item =>
+        filteredFindings.filter(item =>
             item.Status === "Closed" ||
             item.Status === "Completed"
         ).length;
 }
-
 /* =====================================================
    DEPARTMENT FILTER
 ===================================================== */
