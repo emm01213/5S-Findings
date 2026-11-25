@@ -264,9 +264,21 @@ th { background: #f8fafc; color: #475569; }
             <option value="Closed">Closed</option>
             <option value="Completed">Completed</option>
         </select>
-        <input type="date" id="dateFrom" onchange="renderTable()" title="From Date">
+        <input
+    type="text"
+    id="dateFrom"
+    placeholder="From"
+    onfocus="this.type='date'"
+    onchange="renderTable()"
+>
 
-<input type="date" id="dateTo" onchange="renderTable()" title="To Date">
+<input
+    type="text"
+    id="dateTo"
+    placeholder="To"
+    onfocus="this.type='date'"
+    onchange="renderTable()"
+>
 
 
         <button class="secondary" onclick="loadData()">Refresh Data</button>
